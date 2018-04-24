@@ -1,0 +1,74 @@
+===================== Install an Ubuntu instance =======================
+
+===================== Setup AWS-cli on Ubuntu instance =================
+
+===================== Create an S3 Bucket ==============================
+
+===================== Install kubectl on the Ubuntu instance ===========
+curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+
+chmod +x ./kubectl
+
+sudo mv ./kubectl /usr/local/bin/kubectl
+
+===================== install kops on ubuntu instance ====================
+wget https://github.com/kubernetes/kops/releases/download/1.6.1/kops-linux-amd64
+chmod +x kops-linux-amd64
+sudo mv kops-linux-amd64 /usr/local/bin/kops
+
+===================== Create a private Hosted Zone on Route53 ============
+ex: k8s.kalyber.com
+
+==================== Create an S3 Bucket to hold cluster configuration =================================
+aws s3 mb s3://clusters.k8s.kalyber.com
+
+==================== Expose the environment variables =========================
+export KOPS_STATE_STORE=s3://clusters.k8s.kalyber.com
+
+==================== Create Kubernetes Cluster ================================
+kops create cluster --cloud=aws --zones=eu-central-1 --name=demo.k8s.kalyber.com --dns-zone=kalyber.com --dns private
+
+==================== Run the Cluster ==========================================
+kops update cluster demo.k8s.kalyber.com --yes
+
+==================== To Edit the Cluster =======================================
+kops edit cluster demo.k8s.kalyber.com
+
+==================== To Edit Node instance group =============================
+kops edit ig --name=demo.k8s.kalyber.com nodes
+
+=================== To Edit the Master Instance group =========================
+kops edit ig --name=demo.k8s.kalyber.com master-eu-central-1
+
+=================== Enable Kubernetes UI =====================================
+kubectl create -f https://rawgit.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard.yaml
+
+================== Use the kubctl proxy to access the UI from your machine ===
+kubectl proxy --port=8080 &
+
+
+==================== Deploy 2 nginx Containers ===============================
+kubectl run sample-nginx --image=nginx --replicas=2 --port=80
+
+==================== Get the Pods ===========================================
+kubectl get pods
+
+==================== Get the deployments ====================================
+kubectl get deployments
+
+==================== Expose the deployment as service =======================
+kubectl expose deployment sample-nginx --port=80 --type=LoadBalancer
+--> This will create an ELB in front of those 2 containers and allow us to publicly access them
+
+==================== Get the service ========================================
+kubectl get services -o wide
+
+=================== Open the ELB URL in the browser to view nginx ===========
+
+=================== View the UI by accessing master node ====================
+1. Open the public IP of the master node in a browser
+2. It will ask for credentials
+3. Run command "kubectl config view" to see the credentials
+
+
+
