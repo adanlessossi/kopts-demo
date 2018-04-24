@@ -1,4 +1,16 @@
-===================== Install an Ubuntu instance =======================
+-------------------- Create a key-pair --------------------------------------------------------
+aws ec2 create-key-pair --key-name KoptsDemo --query 'KeyMaterial' --output text > KoptsDemo.pem
+--> chmod 400 KoptsDemo.pem
+
+===================== Launch an Ubuntu instance =======================
+aws ec2 run-instances --image-id ami-7c412f13 --count 1 --instance-type t2.micro --key-name KoptsDemo --security-group-ids sg-612e6f0c --subnet-id subnet-9d530bf6
+
+"InstanceId": "i-03943ccdc913ff5ba"
+
+public ip: 18.197.40.216
+
+===================== SSH into the instance ============================
+ssh -i "KoptsDemo.pem" ubuntu@18.197.40.216
 
 ===================== Setup AWS-cli on Ubuntu instance =================
 

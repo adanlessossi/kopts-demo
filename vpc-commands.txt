@@ -1,0 +1,42 @@
+----------------- Create the VPC ---------------
+aws ec2 create-vpc --cidr-block 10.0.0.0/16
+
+vpc-c11c7aaa
+----------------- Create the Subnets with the given VPC-ID ----
+aws ec2 create-subnet --vpc-id vpc-c11c7aaa --cidr-block 10.0.0.0/24 --availability-zone eu-central-1a --> subnet-9d530bf6
+aws ec2 create-subnet --vpc-id vpc-c11c7aaa --cidr-block 10.0.1.0/24 --availability-zone eu-central-1b --> subnet-e2d5449f
+aws ec2 create-subnet --vpc-id vpc-c11c7aaa --cidr-block 10.0.2.0/24 --availability-zone eu-central-1c --> subnet-ac0168e1
+
+------------------- Make subnet public with an Internet Gateway ---
+aws ec2 create-internet-gateway
+
+igw-8d4501e5
+-------------------- Attach the Internet Gateway to the VPC --------
+aws ec2 attach-internet-gateway --vpc-id vpc-c11c7aaa --internet-gateway-id igw-8d4501e5
+
+-------------------- Create a custom Route Table -------------------
+aws ec2 create-route-table --vpc-id vpc-c11c7aaa
+
+rtb-4a071121
+
+---------------- Create a route in the route table that points all traffic (0.0.0.0/0) to the Internet gateway. ----
+aws ec2 create-route --route-table-id rtb-4a071121 --destination-cidr-block 0.0.0.0/0 --gateway-id igw-8d4501e5
+
+
+------------------------- Associate the route table with the public subnet -----------------------
+aws ec2 associate-route-table  --subnet-id subnet-9d530bf6 --route-table-id rtb-4a071121
+
+------------------- Optionally - Add an elastic public ip adress -------------------------
+aws ec2 modify-subnet-attribute --subnet-id subnet-9d530bf6 --map-public-ip-on-launch
+
+------------------------ Create a Security Group for SSH Access -----------------------------------
+aws ec2 create-security-group --group-name SSHAccess --description "Security group for SSH access" --vpc-id vpc-c11c7aaa
+
+
+aws ec2 authorize-security-group-ingress --group-id sg-612e6f0c --protocol tcp --port 22 --cidr 0.0.0.0/0
+aws ec2 authorize-security-group-ingress --group-id sg-612e6f0c --protocol tcp --port 443 --cidr 0.0.0.0/0
+aws ec2 authorize-security-group-ingress --group-id sg-612e6f0c --protocol tcp --port 80 --cidr 0.0.0.0/0
+aws ec2 authorize-security-group-ingress --group-id sg-612e6f0c --protocol tcp --port 8080 --cidr 0.0.0.0/0
+
+---------------------- CONTINUE WITH kopts-commands.txt ---------------------------
+
