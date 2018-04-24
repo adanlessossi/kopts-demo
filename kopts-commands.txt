@@ -28,8 +28,25 @@ export KOPS_STATE_STORE=s3://clusters.k8s.kalyber.com
 ==================== Create Kubernetes Cluster ================================
 kops create cluster --cloud=aws --zones=eu-central-1 --name=demo.k8s.kalyber.com --dns-zone=kalyber.com --dns private
 
+==================== Single master Cluster ==========================================
+kops create cluster  --name demo.k8s.kalyber.com --zones=eu-central-1 --yes
+
+==================== Multi-Master Cluster =====================================
+kops create cluster --name demo.k8s.kalyber.com --master-count 3 --node-count 5 --zones=eu-central-1 --yes
+
+==================== Validate the Cluster ====================================
+kops validate cluster
+
 ==================== Run the Cluster ==========================================
 kops update cluster demo.k8s.kalyber.com --yes
+
+
+==================== Get a summary of available contexts ======================
+kubectl config get-contexts
+
+
+==================== Get summary of current context ===========================
+kubectl config current-context
 
 ==================== To Edit the Cluster =======================================
 kops edit cluster demo.k8s.kalyber.com
