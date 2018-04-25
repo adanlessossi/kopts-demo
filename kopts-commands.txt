@@ -1,19 +1,27 @@
 -------------------- Create a key-pair --------------------------------------------------------
 aws ec2 create-key-pair --key-name KoptsDemo --query 'KeyMaterial' --output text > KoptsDemo.pem
---> chmod 400 KoptsDemo.pem
+aws ec2 create-key-pair --key-name KoptsDemoKeyPair --query 'KeyMaterial' --output text > KoptsDemoKeyPair.pem
+
+--> chmod 400 KoptsDemoKeyPair.pem
 
 ===================== Launch an Ubuntu instance =======================
-aws ec2 run-instances --image-id ami-7c412f13 --count 1 --instance-type t2.micro --key-name KoptsDemo --security-group-ids sg-612e6f0c --subnet-id subnet-9d530bf6
+aws ec2 run-instances --image-id ami-7c412f13 --count 1 --instance-type t2.micro --key-name KoptsDemoKeyPair --security-group-ids sg-612e6f0c --subnet-id subnet-9d530bf6
 
-"InstanceId": "i-03943ccdc913ff5ba"
+"InstanceId": "i-004c8492110601698"
 
-public ip: 18.197.40.216
+public ip: 18.197.59.154
 
-===================== SSH into the instance ============================
-ssh -i "KoptsDemo.pem" ubuntu@18.197.40.216
+===================== SSH into the instance with PUTTY ============================
+
+#ssh -i "KoptsDemoKeyPair.pem" ubuntu@18.184.120.157
+#ssh -i "KoptsDemoKeyPair.pem" ubuntu@ec2-18-197-59-154.compute-1.amazonaws.com
 
 ===================== Setup AWS-cli on Ubuntu instance =================
-
+1. cat /etc/lsb-release
+2. apt-get update && apt-get install awscl
+3. aws --version
+4. aws configure
+5. 
 ===================== Create an S3 Bucket ==============================
 
 ===================== Install kubectl on the Ubuntu instance ===========
@@ -24,12 +32,21 @@ chmod +x ./kubectl
 sudo mv ./kubectl /usr/local/bin/kubectl
 
 ===================== install kops on ubuntu instance =========================
-wget https://github.com/kubernetes/kops/releases/download/1.6.1/kops-linux-amd64
+wget https://github.com/kubernetes/kops/releases/download/1.9.0/kops-linux-amd64
 chmod +x kops-linux-amd64
 sudo mv kops-linux-amd64 /usr/local/bin/kops
 
 ===================== Create a private Hosted Zone on Route53 =================
-ex: k8s.kalyber.com
+ex: demo.k8s.kalyber.com
+
+vpc-c11c7aaa
+eu-central-1
+780462955238
+
+Important
+To use private hosted zones, you must set the following Amazon VPC settings to true:
+enableDnsHostnames
+enableDnsSupport
 
 ==================== Create an S3 Bucket to hold cluster configuration ========
 aws s3 mb s3://clusters.k8s.kalyber.com
@@ -38,19 +55,19 @@ aws s3 mb s3://clusters.k8s.kalyber.com
 export KOPS_STATE_STORE=s3://clusters.k8s.kalyber.com
 
 ==================== Create Kubernetes Cluster ================================
-kops create cluster --cloud=aws --zones=eu-central-1 --name=demo.k8s.kalyber.com --dns-zone=kalyber.com --dns private
+kops create cluster --cloud=aws --zones=eu-central-1a --name=k8s.demo.kalyber.com --dns-zone=demo.kalyber.com --dns private
 
 ==================== Single master Cluster ===================================
-kops create cluster  --name demo.k8s.kalyber.com --zones=eu-central-1 --yes
+kops create cluster  --name eucentral.k8s.kalyber.com --zones=eu-central-1 --yes
 
 ==================== Multi-Master Cluster =====================================
-kops create cluster --name demo.k8s.kalyber.com --master-count 3 --node-count 5 --zones=eu-central-1 --yes
+kops create cluster --name eucentral.k8s.kalyber.com --master-count 3 --node-count 5 --zones=eu-central-1 --yes
 
 ==================== Validate the Cluster ====================================
-kops validate cluster
+kops validate cluster k8s.demo.kalyber.com
 
 ==================== Run the Cluster ==========================================
-kops update cluster demo.k8s.kalyber.com --yes
+kops update cluster k8s.demo.kalyber.com --yes
 
 
 ==================== Get a summary of available contexts ======================
@@ -70,7 +87,8 @@ kops edit ig --name=demo.k8s.kalyber.com nodes
 kops edit ig --name=demo.k8s.kalyber.com master-eu-central-1
 
 =================== Enable Kubernetes UI =====================================
-kubectl create -f https://rawgit.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard.yaml
+kubectl create -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/recommended/kubernetes-dashboard.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/recommended/kubernetes-dashboard.yaml
 
 ================== Use the kubctl proxy to access the UI from your machine ===
 # kubectl proxy --port=8080 &
@@ -78,7 +96,7 @@ kubectl create -f https://rawgit.com/kubernetes/dashboard/master/src/deploy/kube
 kubectl proxy --address 0.0.0.0 --accept-hosts '.*' --port 8080
 
 ==================== Check existing secrets in the kube-system namespace =====
-kubectl -n kube-system describe secret default-token-7vh0x
+kubectl -n kube-system describe secret default-token-4gp87
 
 --> Type:  kubernetes.io/service-account-token
 --> Use this token to login to the dashboard
@@ -165,11 +183,12 @@ kubectl expose deployment sample-nginx --port=80 --type=LoadBalancer
 kubectl get services -o wide
 
 =================== Open the ELB URL in the browser to view nginx ===========
+a172eb2bd482b11e88dfe026e31c0f66-220786834.eu-central-1.elb.amazonaws.com
 
 =================== View the UI by accessing master node ====================
 1. Open the public IP of the master node in a browser
 2. It will ask for credentials
-3. Run command "kubectl config view" to see the credentials
+3. Run command "kubectl config view" to see the credentials --> LnvIVeT0JgYcl9WFwcEiXmOlE7WAYz13
 
 ================== Non-parallel Job =========================================
 apiVersion: batch/v1
