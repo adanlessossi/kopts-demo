@@ -103,6 +103,7 @@ kubectl -n kube-system describe secret default-token-4gp87
 
 kubectl -n kube-system get secret
 
+ToKen: ==> eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlLXN5c3RlbSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJkZWZhdWx0LXRva2VuLTRncDg3Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQubmFtZSI6ImRlZmF1bHQiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC51aWQiOiI1ZWFkNjVhZC00ODI0LTExZTgtOGRmZS0wMjZlMzFjMGY2NjQiLCJzdWIiOiJzeXN0ZW06c2VydmljZWFjY291bnQ6a3ViZS1zeXN0ZW06ZGVmYXVsdCJ9.OYUH_zICYw_EVqzLp4uWl6BArdYiCffn9nIdkgOF97BkwGbcTnluQiLm-q-9WPuSsJfFW41wZLt7DBRMZg2SWqqZ2ctLmwZCkJ8LGOun7xo-aRPfp-rd6pamyEWfY0R397cCroNnsJoMX1I1-qevaEicgMQ1MQ1VSN6Sq5Q7KJ1xordD2J1LkG0FN622zeGIHg1ZmgtAh5BZPjMX1LQvrCP-327S_k0oQQcLlwoHf56m4vuoscaTDkGhOe8VzOtGD0rKZAvep4B3wMNY2ZW0I9zU50_K50-k-TcOesp75PsJvtvIqBqLRLGsGy8OOuldQXrfMUhuk1IcmkAwvoDstQ
 
 ==================== Deploy 2 nginx Containers ===============================
 kubectl run sample-nginx --image=nginx --replicas=2 --port=80
@@ -189,6 +190,10 @@ a172eb2bd482b11e88dfe026e31c0f66-220786834.eu-central-1.elb.amazonaws.com
 1. Open the public IP of the master node in a browser
 2. It will ask for credentials
 3. Run command "kubectl config view" to see the credentials --> LnvIVeT0JgYcl9WFwcEiXmOlE7WAYz13
+
+https://18.184.110.148:8080/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/
+
+http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/#!/deploy/app?namespace=default
 
 ================== Non-parallel Job =========================================
 apiVersion: batch/v1
